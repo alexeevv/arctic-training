@@ -1,4 +1,11 @@
 # arctic-training
 Sample code from the Arctic Data Center training
 
-skdjaslkdjk
+This repository is used as:
+
+* An introduction to git
+* Using with RStudio
+
+## Credits
+
+Thank you all participants
