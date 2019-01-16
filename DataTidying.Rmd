@@ -1,0 +1,24 @@
+---
+title: "Data_Tidying"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning = F, message = F, echo = F}
+library(dplyr)
+library(tidyr)
+catch_df<-read.csv(file='https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1')
+                
+head(catch_df)
+```
+
+Calling a function from a specific library: 'library_name::function_name( ... )'
+
+# Data cleaning
+
+# Split-Apply-Combine
+
+#Joins
