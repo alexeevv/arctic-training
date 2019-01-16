@@ -196,8 +196,24 @@ $(document).ready(function () {
 ## 5    SSE 1890       0     251   42    0    0 292             
 ## 6    SSE 1891       0     274   24    0    0 298</code></pre>
 <p>Calling a function from a specific library: ‘library_name::function_name( … )’</p>
+<p>cmd + shift + m %&gt;% gives pipe operator</p>
+<p>‘gather’ will create long format.</p>
 <div id="data-cleaning" class="section level1">
 <h1>Data cleaning</h1>
+<pre class="r"><code>catch_long &lt;- catch_df %&gt;% 
+  select(-All, -notesRegCode) %&gt;% 
+  gather(key = &quot;species&quot;, value = &quot;catch&quot;, -Year, -Region)</code></pre>
+<pre><code>## Warning: attributes are not identical across measure variables;
+## they will be dropped</code></pre>
+<pre class="r"><code>head(catch_long)</code></pre>
+<pre><code>##   Region Year species catch
+## 1    SSE 1886 Chinook     0
+## 2    SSE 1887 Chinook     0
+## 3    SSE 1888 Chinook     0
+## 4    SSE 1889 Chinook     0
+## 5    SSE 1890 Chinook     0
+## 6    SSE 1891 Chinook     0</code></pre>
+<p>We’ve just created a clean dataframe (catch_long). Removed marginal sums and notes. Moved from wide to long (tall) format. Negative values in ‘select’ function remove columns.</p>
 </div>
 <div id="split-apply-combine" class="section level1">
 <h1>Split-Apply-Combine</h1>

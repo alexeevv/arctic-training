@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, warning = F, message = F, echo = F}
 library(dplyr)
 library(tidyr)
-catch_df<-read.csv(file='https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1')
+catch_long<-read.csv(file='https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1')
                 
 head(catch_df)
 
@@ -21,13 +21,29 @@ Calling a function from a specific library: 'library_name::function_name( ... )'
 
 cmd + shift + m %>% gives pipe operator
 
+'gather' will create long format.
+
 # Data cleaning
 ```{r}
-catch_long <- catch_df %>% 
+catch_df <- catch_long %>% 
   select(-All, -notesRegCode) %>% 
   gather(key = "species", value = "catch", -Year, -Region)
+```
 
-head(catch_long)
+
+```{r}
+catch_cleaned <- catch_df %>% 
+  rename(catch_thousands = catch) #%>% 
+#  mutate(catch=catch_thousands*1000)
+
+head(catch_cleaned)
+```
+
+```{r}
+test_catch <- as.integer(catch_cleaned$catch_thousands)
+
+i<- which(is.na(test_catch) == T)
+catch_cleaned[i, ]
 ```
 
 We've just created a clean dataframe (catch_long). Removed marginal sums and notes.
