@@ -7,10 +7,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, warning = F, message = F, echo = F}
+```{r, warning = F, message = F}
 library(dplyr)
 library(tidyr)
-catch_long<-read.csv(file='https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1')
+catch_df<-read.csv(file='https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1',
+                    stringsAsFactors = FALSE)
                 
 head(catch_df)
 
@@ -25,21 +26,29 @@ cmd + shift + m %>% gives pipe operator
 
 # Data cleaning
 ```{r}
-catch_df <- catch_long %>% 
+catch_long <- catch_df %>% 
   select(-All, -notesRegCode) %>% 
   gather(key = "species", value = "catch", -Year, -Region)
+
+head(catch_long)
 ```
 
+Corrected ascii value in catch, line 401.
 
 ```{r}
-catch_cleaned <- catch_df %>% 
-  rename(catch_thousands = catch) #%>% 
-#  mutate(catch=catch_thousands*1000)
+catch_cleaned <- catch_long %>% 
+  rename(catch_thousands = catch) %>% 
+  mutate(catch_thousands = ifelse(catch_thousands == 'I', 1, catch_thousands)) %>% 
+  mutate(catch_thousands = as.integer(catch_thousands)) %>% 
+  mutate(catch=catch_thousands*1000)
 
 head(catch_cleaned)
 ```
 
-```{r}
+```{r, echo=F}
+
+# used this code to test one value
+
 test_catch <- as.integer(catch_cleaned$catch_thousands)
 
 i<- which(is.na(test_catch) == T)
@@ -51,4 +60,51 @@ Moved from wide to long (tall) format. Negative values in 'select' function remo
 
 # Split-Apply-Combine
 
-#Joins
+Calculate total catch by region
+
+```{r}
+catch_total <- catch_cleaned %>% 
+  group_by(Year, Region, species) %>% 
+  summarize(catch_total = sum(catch))
+
+# catch_total
+
+catch_matt <- catch_cleaned %>% 
+  group_by(species, Year) %>% 
+  summarise(catch_mean = mean(catch), catch_sd=sd(catch), catch_n=n())
+
+head(catch_matt)
+```
+
+Filter by species and something else
+
+```{r}
+catch_chinook <- catch_cleaned %>% 
+  filter(species == "Chinook" & Region == "SSE" & Year > 1990) %>% 
+  arrange(Year)
+
+catch_chinook
+```
+
+
+# Joins
+
+```{r}
+region_defs <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1", method = "libcurl"), stringsAsFactors = FALSE)
+
+head(region_defs)
+```
+
+```{r}
+region_clean <- region_defs %>% 
+  select(code, mgmtArea)
+
+head(region_clean)
+```
+
+```{r}
+catch_joined <- left_join(catch_cleaned, region_clean, 
+                          by = c("Region" = "code"))
+
+head(catch_joined)
+```
