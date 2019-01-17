@@ -92,6 +92,8 @@ p1
 
 ggsave("region_escapement.png", plot = p1, height = 10, width = 8, units = "in")
 ```
+
+
 # Interactive plots
 
 Make a map using leaflet
