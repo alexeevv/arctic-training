@@ -1,28 +1,94 @@
 ---
-title: "Anything"
+title: "Anything goes"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(DT)
 ```
 
-## R Markdown
+# Data tidying
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Read in data from KNB data repository, ADFG
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Alaska Department of Fish and Game, Division of Commercial Fisheries. 2017. Daily salmon escapement counts from the OceanAK database, Alaska, 1921-2017. Knowledge Network for Biocomplexity. doi:10.5063/F1S46Q6M
 
-```{r cars}
-summary(cars)
+
+```{r, echo = F, results = F}
+esc<-read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af119a05b-bbe7-4aea-93c6-85434dcb1c5e", stringsAsFactors = F)
+
+# head(esc)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+# Calculating annual
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+separate date into yr-mon-day
+
+calculate regional totals 
+
+We will use 'group_by' and 'summarize' and  sum over unique regions for individual species
+
+Also, filter for salmon species
+
+```{r, echo = F}
+annual_esc <- esc %>% 
+  separate(sampleDate, into = c("year", "month", "day"), sep = "-") %>% 
+  mutate(year = as.numeric(year)) %>% 
+  group_by(SASAP.Region, Species,year) %>% 
+  summarise(escapement = sum(DailyCount)) %>% 
+  filter(Species %in% c("Chinook", "Sockeye", "Pink", "Chum", "Coho"))
+
+write.csv(annual_esc, "annual escapement.csv", row.names = F)
+  
+# head(annual_esc)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r, echo = F}
+datatable(annual_esc)
+```
+# Static plots
+
+Use ggplot cheatsheets to look for options
+
+```{r}
+ggplot(data = annual_esc, mapping = aes(x = Species, y = escapement, fill = SASAP.Region)) + 
+  geom_col()
+```
+
+Timeseries in Kodiak by species
+
+```{r}
+my_theme = theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+kodiak_esc = filter(annual_esc, SASAP.Region == "Kodiak")
+ggplot(data = kodiak_esc, mapping = aes(x = year, y = escapement, color = Species)) + 
+  geom_line() + 
+  geom_point() +
+  ylab(bquote('Escapement (number of fish)  '  ~D^15~'')) +
+  xlab("Year") +
+  ggtitle("Кодиак Salmon Escapement") +
+  my_theme
+```
+
+you can define my_theme to remember your favorite option. Next time you plot anything, just call my_theme.
+
+Plot timeseries of escapement by species for all regions, separately.
+
+```{r, fig.height = 8, fig.width=6}
+p1 <- ggplot(annual_esc, aes(x = year, y = escapement, color = Species)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~SASAP.Region, scales = "free_y", ncol = 2) +
+  my_theme
+
+p1
+
+ggsave("region_escapement.png", plot = p1, height = 10, width = 8, units = "in")
+```
+# Interactive plots
