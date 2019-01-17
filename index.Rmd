@@ -36,7 +36,7 @@ We will use 'group_by' and 'summarize' and  sum over unique regions for individu
 
 Also, filter for salmon species
 
-```{r, echo = F}
+```{r, echo = T}
 annual_esc <- esc %>% 
   separate(sampleDate, into = c("year", "month", "day"), sep = "-") %>% 
   mutate(year = as.numeric(year)) %>% 
@@ -49,7 +49,7 @@ write.csv(annual_esc, "annual escapement.csv", row.names = F)
 # head(annual_esc)
 ```
 
-```{r, echo = F}
+```{r, echo = T}
 datatable(annual_esc)
 ```
 # Static plots
