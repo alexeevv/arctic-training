@@ -9,6 +9,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(DT)
+library(leaflet)
 ```
 
 # Data tidying
@@ -92,3 +93,25 @@ p1
 ggsave("region_escapement.png", plot = p1, height = 10, width = 8, units = "in")
 ```
 # Interactive plots
+
+Make a map using leaflet
+
+Find unique locations with lat-lon values
+
+```{r}
+locations <- esc %>% 
+  distinct(Location, Latitude, Longitude) %>% 
+  drop_na()
+
+datatable(locations)
+```
+
+Create an interactive map
+
+Package sf (Special features) handles shapefiles for leaflet.
+
+```{r}
+leaflet(locations) %>% 
+  addTiles() %>% 
+  addMarkers(~ Longitude, ~ Latitude, popup = ~ Location)
+```
